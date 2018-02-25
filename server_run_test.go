@@ -21,6 +21,7 @@ func TestRunServerFreelancer(t *testing.T) {
 	opts := dplay.ServerOptions{
 		EnumResponseData: func() []byte { return adata.Bytes() },
 		Name:             "OpenFL Server",
+		PlayerCount:      func() uint { return 0 },
 		MaxPlayers:       5,
 		ApplicationGUID: []byte{
 			0x26, 0xf0, 0x90, 0xa6, 0xf0, 0x26, 0x57, 0x4e, 0xac, 0xa0, 0xec, 0xf8,

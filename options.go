@@ -6,15 +6,18 @@ type ServerOptions struct {
 	// for enum requests.
 	EnumResponseData func() []byte
 
+	// PlayerCount should return current player count for the server.
+	PlayerCount func() uint
+
 	// Name is this server's visible name.
 	Name string
 
 	// MaxPlayers imposes max upper limit on player count.
 	MaxPlayers uint
 
-	// IsPassworded is true if passowrd is required to connect
+	// IsPassworded is true if password is required to connect
 	// to the server.
-	// IsPassworded bool
+	IsPassworded bool
 
 	// ApplicationInstanceGUID is the instance GUID that
 	// identifies the game session. Refer to MS-DPDX 2.2.5.

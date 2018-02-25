@@ -22,23 +22,23 @@ func (s *Server) sendEnumResponse(ep *net.UDPAddr, enumPayload Uint16) {
 	// ApplicationDescFlags
 	{
 		n1 := uint(0x00)
-		// TODO password
-		// if s.opts.IsPassworded {
-		// 	n1 = uint(0x80)
-		// }
-		// TODO 0x00 instead of 0x40 if DPNSVR is used; however it's dead
+		if s.opts.IsPassworded {
+			n1 = uint(0x80)
+		}
+		// 0x00 instead of 0x40 if DPNSVR is used; however it's dead
 		p.AddUint32(Uint32(n1 | uint(0x40))) // ApplicationDescFlags
 	}
 
-	p.AddUint32(Uint32(s.opts.MaxPlayers) + 1)
-	// TODO send current player count
-	p.AddUint32(Uint32(0 + 1))
+	p.AddUint32(Uint32(s.opts.MaxPlayers))
+	p.AddUint32(Uint32(s.opts.PlayerCount()))
 
 	p.AddUint32(Uint32(0x58))                           // SessionNameOffset
 	p.AddUint32(Uint32(len([]byte(s.opts.Name))*2 + 2)) // SessionNameSize
-	// TODO password
+
+	// Passwords aren't ever sent in enum rsp, so these are deprecated
 	p.AddUint32(Uint32(0)) // PasswordOffset
 	p.AddUint32(Uint32(0)) // PasswordSize
+
 	p.AddUint32(Uint32(0)) // ReservedDataOffset
 	p.AddUint32(Uint32(0)) // ReservedDataSize
 	p.AddUint32(Uint32(0)) // ApplicationReservedDataOffset
