@@ -15,7 +15,13 @@ func (p *Packet) GetUint8() (ret Uint8) {
 }
 
 func (p *Packet) GetUint16() (ret Uint16) {
-	ret = Uint16(( uint(p.buf[p.pos+1]) << 8) | uint(p.buf[p.pos]))
+	ret = Uint16((uint(p.buf[p.pos+1]) << 8) | uint(p.buf[p.pos]))
 	p.pos += 2
 	return
+}
+
+func (p *Packet) GetBytes(n uint) []byte {
+	ret := p.buf[p.pos : p.pos+n]
+	p.pos += n
+	return ret
 }

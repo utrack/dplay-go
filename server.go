@@ -2,16 +2,18 @@
 package dplay
 
 import (
-	"github.com/Sirupsen/logrus"
+	"bytes"
 	"net"
 	"sync"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // Server is a DirectPlay server.
 // It controls the primary DP UDP socket and
 // DirectPlay sessions.
 type Server struct {
-	IsPassworded bool
+	// IsPassworded bool
 
 	opts ServerOptions
 
@@ -21,7 +23,7 @@ type Server struct {
 	bufpool sync.Pool
 
 	// output queue
-	outQueue chan outMsg
+	outQueue chan message
 }
 
 const (
@@ -30,21 +32,23 @@ const (
 )
 
 // NewServer returns new DirectPlay server.
-func NewServer(addr string,opts ServerOptions) (ret *Server,err error) {
-	udpAddr,err := net.ResolveUDPAddr("udp",addr)
+func NewServer(addr string, opts ServerOptions) (ret *Server, err error) {
+	udpAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return
 	}
 
-	c,err := net.ListenUDP("udp",udpAddr)
+	c, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		return
 	}
 
-	ret = &Server{listenConn:c,opts: opts}
-	ret.outQueue = make(chan outMsg,50)
+	ret = &Server{listenConn: c, opts: opts}
+	ret.outQueue = make(chan message, 50)
 	ret.bufpool.New = func() interface{} {
-		return make([]byte,0,defaultBufLen)
+		return &data{
+			Buffer: bytes.NewBuffer(make([]byte, 0, defaultBufLen)),
+		}
 	}
 	return
 }
@@ -52,22 +56,25 @@ func NewServer(addr string,opts ServerOptions) (ret *Server,err error) {
 // Listen starts the socket processes synchronously.
 // Also initiates the output messages' pump.
 func (s *Server) Listen() {
+	logrus.Info("Running")
 	go s.outPump()
 	for {
-		buf := s.bufpool.Get().([]byte)
-		// TODO start parsing
-		n,ep,err := s.listenConn.ReadFromUDP(buf)
+		wr := s.getBuffer()
+		buf := wr.Bytes()
+		buf = buf[:defaultBufLen]
+		n, ep, err := s.listenConn.ReadFromUDP(buf)
 
 		if err != nil {
 			logrus.Warn(err)
 		}
-
 		if n < 2 {
-			logrus.Debug("Received short packet!")
+			logrus.Debug("Small packet")
 			continue
 		}
 
-		s.preprocessPacket(buf[0:n],ep)
+		// Start parsing
+		s.preprocessPacket(buf[:n], ep)
+		s.bufpool.Put(wr)
 	}
 }
 
@@ -75,8 +82,10 @@ func (s *Server) Listen() {
 func (s *Server) outPump() {
 	logrus.Debug("Dplay output pump started")
 	for {
-		out := <- s.outQueue
-		s.listenConn.WriteToUDP(out.msg,out.addr)
-		s.bufpool.Put(out)
+		out := <-s.outQueue
+		msg := out.wr.Bytes()
+		logrus.Debugf("put % #x", msg)
+		s.listenConn.WriteToUDP(msg, out.addr)
+		s.bufpool.Put(out.wr)
 	}
 }
