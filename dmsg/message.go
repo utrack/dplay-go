@@ -20,7 +20,7 @@ const (
 	CmdCFrame Command = 0x80
 	// CmdCFramePoll is a PACKET_COMMAND_POLL - CFRAME that should be ACKd
 	// immediately.
-	CmdCFramePoll = 0x08
+	CmdCFramePoll Command = 0x08
 )
 
 const (
