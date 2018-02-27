@@ -15,6 +15,11 @@ func (c Command) IsCFrame() bool {
 	return (c & CmdCFrame) == CmdCFrame
 }
 
+// IsEq returns true if command contains the provided mask.
+func (c Command) IsEq(cm Command) bool {
+	return (c & cm) == cm
+}
+
 const (
 	// CmdCFrame is a PACKET_COMMAND_CFRAME.
 	CmdCFrame Command = 0x80
@@ -57,6 +62,11 @@ func (f CFrame) ExtOpCode() CFrameOpCode {
 // CFrameOpCode indicates what type of a request is being made with this CFRAME.
 // See MC-DPL8R 2.2.1.[1-5] for details.
 type CFrameOpCode byte
+
+// IsEq returns true if opcode contains the provided mask.
+func (c CFrameOpCode) IsEq(cm CFrameOpCode) bool {
+	return (c & cm) == cm
+}
 
 const (
 	// CfOpCodeConnect is a CONNECT CFRAME message. It is used to request a connection.

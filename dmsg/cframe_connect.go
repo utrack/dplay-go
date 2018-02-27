@@ -19,6 +19,11 @@ func (f CFrameConnect) MessageID() uint8 {
 	return f[2]
 }
 
+// ResponseID SHOULD be equal to CONNECT or CONNECTED's MessageID of a source msg.
+func (f CFrameConnect) ResponseID() uint8 {
+	return f[3]
+}
+
 // ProtoVersion returns current protocol version.
 // First digit MUST be 0x0001.
 // Second digit controls features:
@@ -73,6 +78,11 @@ func NewCFrameConnected(buf []byte, isAckFromClient bool) CFrameConnectedWriter 
 // MessageID sets message ID for this pkt.
 func (w CFrameConnectWriter) MessageID(id uint8) {
 	w[2] = id
+}
+
+// ResponseID sets RspID for this pkt.
+func (w CFrameConnectWriter) ResponseID(id uint8) {
+	w[3] = id
 }
 
 // ProtoVersion sets lower part of a DPlay version.
